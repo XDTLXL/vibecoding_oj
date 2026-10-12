@@ -1,0 +1,22 @@
+# 构建产物（Makefile 输出目录）
+build/
+*.o
+*.d
+
+# 编辑器辅助文件：由 `make compdb` 生成，内含本机绝对路径，不入库
+compile_commands.json
+
+# clangd 的索引缓存
+.cache/
+
+# 自签证书：每台机器自行生成，见 tools/gen_cert.sh（SPEC.md §14）
+certs/
+
+# 真实配置：含 jwt_secret 与数据库口令，不入库（SPEC.md §14）
+# 示例见 config/config.ini.example
+config/config.ini
+
+# 编辑器/系统垃圾
+*.swp
+*~
+.DS_Store

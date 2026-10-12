@@ -1,0 +1,68 @@
+# VibeCoding OJ 配置示例（SPEC.md §11.3）
+#
+# 用法：
+#   cp config/config.ini.example config/config.ini
+#   然后修改下面标了「必须修改」的项
+#
+# 约定：
+#   - config/config.ini 已被 .gitignore 排除：它含 jwt_secret 与数据库口令，不入库
+#   - 注释只支持整行注释（行首为 # 或 ;）。
+#     不支持行尾注释 —— 值里可以合法地包含 # 和 ;（口令常见），
+#     若支持行尾注释就会把口令的后半截吃掉
+#   - 未在本文件中出现的键，使用程序内置默认值（见 src/config.h）
+#   - 不要重复定义同一个键；重复会被当成配置错误拒绝启动（早失败比悄悄用错值好）
+
+[server]
+# 绑定地址。0.0.0.0 = 监听所有网卡。
+# 在 WSL2 中从 Windows 浏览器访问时需要 0.0.0.0；只在本机访问可改成 127.0.0.1
+bind_host = 0.0.0.0
+port = 8443
+static_root = web
+cert_file = certs/server.crt
+key_file = certs/server.key
+# 单请求体上限（字节）。httplib 内置默认值等于「无上限」，必须显式设置。
+# 需覆盖 M3 的 multipart 测试数据上传，故留 32MB
+max_payload_bytes = 33554432
+
+[mysql]
+host = 127.0.0.1
+port = 3306
+user = oj
+# 必须修改：sql/schema.sql 里创建的 oj 账号口令
+password =
+database = oj
+pool_size = 8
+
+[auth]
+# 必须修改：JWT 签名密钥，留空则拒绝启动（留空等于任何人都能伪造管理员 token）
+# 生成方式：openssl rand -hex 32
+jwt_secret =
+jwt_expire_hours = 24
+pbkdf2_iterations = 210000
+
+[judge]
+# 判题线程数，建议 min(4, CPU核数-1)
+threads = 4
+# 判题队列上限，超出返回业务错误 2002
+queue_capacity = 100
+compile_timeout_ms = 10000
+# 用户提交代码长度上限（字节），超出返回业务错误 2003
+max_code_bytes = 65536
+# 单个测试点输出上限（字节），超出判 OLE
+max_output_bytes = 16777216
+# 单题测试点数量上限
+max_cases_per_problem = 100
+# Run 结果在内存中的存活时间（秒）
+run_result_ttl_seconds = 600
+
+[paths]
+# 测试数据目录：data/problems/{problem_id}/{idx}.in|.out
+data_root = data/problems
+# 判题编译临时目录，服务启动时会清理其残留内容
+build_root = /tmp/oj_build
+# 沙箱降权目标用户
+sandbox_uid = nobody
+
+[log]
+# DEBUG / INFO / WARN / ERROR
+level = INFO
